@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Happy Birthday!</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        /* --- RESET & BASIC SETUP --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Fredoka', sans-serif;
+            background: linear-gradient(135deg, #fff5f7 0%, #ffe4e9 100%);
+            height: 100vh;
+            height: 100dvh; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            color: #7d4f7d;
+            overscroll-behavior-y: contain; 
+        }
+
+        /* --- UTILITY CLASSES --- */
+        .page {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.8s ease-in-out, transform 0.8s ease-in-out;
+            z-index: 10;
+        }
+        .hidden { display: none !important; }
+        .page-enter { opacity: 0; transform: translateY(20px); }
+        .page-active { opacity: 1; transform: translateY(0); }
+        .page-exit  { opacity: 0; transform: translateY(-20px); }
+
+        /* --- COMPONENT STYLES --- */
+        .card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            padding: 30px 20px;
+            border-radius: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
+            width: 85%;
+            max-width: 350px;
+            position: relative;
+        }
+        
+        .card h2 { color: #8e44ad; font-size: 24px; line-height: 1.3; margin-bottom: 10px; }
+        .card p.subtitle { color: #7f8c8d; font-size: 16px; margin-bottom: 25px; }
+
+        .btn-primary {
+            background-color: #e0b0ff; color: #fff; border: none; padding: 15px 30px; border-radius: 50px; font-size: 18px; font-family: 'Fredoka', sans-serif; cursor: pointer; box-shadow: 0 5px 15px rgba(165, 105, 189, 0.3); transition: transform 0.2s, background-color 0.2s; display: inline-flex; align-items: center; gap: 10px; position: relative;
+            touch-action: manipulation;
+        }
+        .btn-primary:active { transform: scale(0.95); }
+
+        /* --- PAGE 1 CSS --- */
+        .loading-container { text-align: center; width: 90%; max-width: 400px; }
+        @keyframes popIn { 0% { opacity: 0; transform: scale(0.5); } 100% { opacity: 1; transform: scale(1); } }
+        @keyframes fadeInUp { 0% { opacity: 0; transform: translateY(20px); } 100% { opacity: 1; transform: translateY(0); } }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        @keyframes fillBar { 0% { width: 0%; } 100% { width: 100%; } }
+        .cake-wrapper { opacity: 0; animation: popIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; animation-delay: 0.5s; }
+        .cake-icon { font-size: 80px; margin-bottom: 10px; display: inline-block; animation: bounce 2s infinite ease-in-out; }
+        .loading-text { font-size: 22px; margin-bottom: 20px; font-weight: 600; color: #6a4c6a; opacity: 0; animation: fadeInUp 0.8s ease-out forwards; animation-delay: 1.5s; }
+        .progress-bar { width: 100%; height: 20px; border: 2px solid #a569bd; border-radius: 20px; background-color: rgba(255, 255, 255, 0.5); padding: 3px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); opacity: 0; animation: fadeInUp 0.8s ease-out forwards; animation-delay: 2.5s; }
+        .progress-fill { height: 100%; width: 0%; background-color: #a569bd; border-radius: 15px; animation: fillBar 3s ease-in-out forwards; animation-delay: 3.0s; }
+
+        /* --- PAGE 2 CSS --- */
+        .intro-img-container { width: 100%; height: 180px; background-color: rgba(255, 245, 247, 0.5); border-radius: 20px; overflow: hidden; margin-bottom: 20px; display: flex; justify-content: center; align-items: center; }
+        .intro-img-container img { width: 100%; height: 100%; object-fit: contain; }
+
+        /* --- PAGE 3 CSS (CAKE) --- */
+        .toran { position: absolute; top: 0; left: 0; width: 100%; height: 100px; display: flex; justify-content: center; z-index: 1; pointer-events: none; }
+        .flag { width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-top: 40px solid; margin: 0 5px; position: relative; transform-origin: 50% 0; animation: sway 2s ease-in-out infinite alternate; }
+        .flag:nth-child(odd) { border-top-color: #ff6b6b; } .flag:nth-child(even) { border-top-color: #feca57; }
+        @keyframes sway { from { transform: rotate(-5deg); } to { transform: rotate(5deg); } }
+        
+        .cake-container { position: relative; width: 250px; height: 200px; margin: 0 auto 30px auto; display: flex; justify-content: center; align-items: flex-end; }
+        @media (max-height: 700px) { .cake-container { transform: scale(0.85); margin-bottom: 10px; } #cakeTitle { margin-bottom: 50px !important; } }
+
+        .plate { width: 270px; height: 110px; position: absolute; bottom: 0; left: -10px; background-color: #ccc; border-radius: 50%; box-shadow: 0 10px 0 #999; }
+        .layer { position: absolute; width: 250px; height: 100px; border-radius: 50%; background-color: #ff9ff3; box-shadow: 0 4px 0px #f368e0, inset 0 -4px 0px rgba(0,0,0,0.1); }
+        .layer-bottom { bottom: 10px; z-index: 1; } .layer-middle { bottom: 45px; z-index: 2; background-color: #f368e0; } .layer-top { bottom: 80px; z-index: 3; background-color: #ff9ff3; }
+        .icing { top: 22px; left: 5px; background-color: #f0f0f0; width: 240px; height: 90px; border-radius: 50%; position: absolute; z-index: 4; }
+        .drip { display: block; width: 50px; height: 60px; border-bottom-left-radius: 25px; border-bottom-right-radius: 25px; background-color: #f0f0f0; position: absolute; z-index: 4; }
+        .drip1 { top: 75px; left: 10px; height: 40px; } .drip2 { top: 85px; left: 90px; height: 50px; } .drip3 { top: 75px; left: 170px; height: 35px; }
+        .candle { background-color: #7B001C; width: 32px; height: 80px; border-radius: 10px / 5px; position: absolute; top: -20px; left: 50%; transform: translateX(-50%); z-index: 3; box-shadow: inset -5px 0 0 rgba(0,0,0,0.1); }
+        .flame { position: absolute; background-color: orange; width: 24px; height: 40px; border-radius: 50% 50% 20% 20%; top: -45px; left: 50%; transform: translateX(-50%) scale(0.5); z-index: 10; box-shadow: 0 0 10px orange, 0 0 20px yellow; opacity: 0; transition: all 0.5s; }
+        .flame.lit { opacity: 1; transform: translateX(-50%) scale(1); animation: flicker 1s infinite alternate; }
+        @keyframes flicker { 0% { transform: translateX(-50%) skewX(5deg); opacity: 0.9; } 100% { transform: translateX(-50%) skewX(-5deg); opacity: 1; } }
+
+        /* --- PAGE 4 CSS (BALLOONS) --- */
+        .balloon-area { position: relative; width: 100%; height: 300px; display: flex; justify-content: center; margin-top: 20px; }
+        @media (max-width: 380px) { .balloon-area { transform: scale(0.9); margin-top: 10px; } }
+        .balloon-wrapper { position: absolute; bottom: 0; display: flex; flex-direction: column; align-items: center; transform-origin: bottom center; }
+        .b1 { left: 10%; transform: rotate(-15deg); } .b2 { left: 30%; transform: rotate(-5deg); bottom: 10px; }
+        .b3 { right: 30%; transform: rotate(5deg); bottom: 10px; } .b4 { right: 10%; transform: rotate(15deg); }
+        .balloon { width: 60px; height: 75px; border-radius: 50% 50% 50% 50% / 40% 40% 60% 60%; box-shadow: inset -5px -5px 10px rgba(0,0,0,0.1); cursor: pointer; position: relative; z-index: 2; transition: transform 0.2s; animation: float 3s ease-in-out infinite alternate; }
+        .balloon:active { transform: scale(0.95); }
+        .b1 .balloon { background-color: #ff9ff3; animation-delay: 0s; } .b2 .balloon { background-color: #feca57; animation-delay: 0.5s; }
+        .b3 .balloon { background-color: #ff6b6b; animation-delay: 1s; } .b4 .balloon { background-color: #c8d6e5; animation-delay: 1.5s; }
+        .string { width: 2px; height: 100px; background-color: #bbb; margin-top: -2px; z-index: 1; }
+        .hidden-text { position: absolute; top: 30px; font-size: 18px; font-weight: bold; color: #8e44ad; z-index: 1; opacity: 0; transition: opacity 0.5s; pointer-events: none; }
+        .revealed { opacity: 1; }
+        .popped { visibility: hidden; opacity: 0; transition: opacity 0.2s; }
+        @keyframes float { from { transform: translateY(0); } to { transform: translateY(-10px); } }
+
+        /* --- PAGE 5 CSS (GALLERY) --- */
+        /* --- PAGE 5 CSS (GALLERY WITH CAPTIONS) --- */
+        .gallery-viewport { 
+            width: 100%; 
+            height: 0; 
+            padding-bottom: 100%; /* Made slightly taller to fit text */
+            max-height: 400px; 
+            border-radius: 20px; 
+            overflow: hidden; 
+            position: relative; 
+            margin-bottom: 25px; 
+            background-color: #fff0f5; 
+            border: 2px solid #fff; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05); 
+        }
+
+        .gallery-track { 
+            display: flex; 
+            height: 100%; 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            transition: transform 0.5s ease-in-out; 
+        }
+
+        .gallery-slide { 
+            min-width: 100%; 
+            height: 100%; 
+            position: relative; 
+            display: flex; 
+            flex-direction: column; /* Stack Image on top of Text */
+            justify-content: center; 
+            align-items: center;
+            padding: 10px; 
+            box-sizing: border-box;
+        }
+
+        .gallery-slide img { 
+            width: 100%; 
+            height: 80%; /* Image takes 80% of the card */
+            object-fit: contain; /* Ensures no cropping! */
+            border-radius: 10px; 
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));
+        }
+
+        /* New Caption Style */
+        .caption {
+            height: 20%; /* Text takes bottom 20% */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: 15px;
+            font-weight: 600;
+            color: #8e44ad;
+            padding-top: 5px;
+            line-height: 1.2;
+        }
+
+        /* Hearts positioned */
+        .photo-heart { position: absolute; font-size: 24px; color: #ff6b6b; z-index: 2; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); }
+        .ph-left { top: 10px; left: 10px; transform: rotate(-15deg); } 
+        .ph-right { top: 10px; right: 10px; transform: rotate(15deg); }
+
+        /* --- PAGE 6, 7, 8 CSS --- */
+        .message-img { width: 100%; height: 100%; object-fit: cover; border-radius: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        
+        .gift-container { width: 120px; height: 120px; margin: 30px auto; cursor: pointer; animation: bounce 2s infinite; }
+        .gift-container img { width: 100%; height: 100%; object-fit: contain; }
+
+        .final-gif-container { width: 100%; height: 180px; margin-bottom: 20px; display: flex; justify-content: center; align-items: center; }
+        .final-gif-container img { width: 100%; height: 100%; object-fit: contain; }
+        
+        /* --- LETTER PAGE CSS --- */
+        .paper { width: 100%; height: 250px; background: #fffdf0; border: 1px solid #e0d0b0; border-radius: 10px; padding: 20px; overflow-y: auto; margin-bottom: 20px; box-shadow: inset 0 0 10px rgba(0,0,0,0.05); text-align: left; font-size: 16px; line-height: 1.6; color: #555; }
+        .paper::-webkit-scrollbar { width: 8px; }
+        .paper::-webkit-scrollbar-track { background: transparent; }
+        .paper::-webkit-scrollbar-thumb { background-color: #e0b0ff; border-radius: 10px; }
+
+        /* --- COUPON PAGE CSS (NEW!) --- */
+        .coupon-container {
+            width: 100%;
+            height: 250px;
+            overflow-y: auto;
+            padding: 5px;
+            margin-bottom: 20px;
+        }
+        .coupon {
+            background: white;
+            border: 2px dashed #e0b0ff;
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
+        }
+        .coupon:active { transform: scale(0.98); background-color: #fcf0ff; }
+        .coupon-icon { font-size: 30px; }
+        .coupon-text { text-align: left; }
+        .coupon-text h3 { font-size: 18px; color: #8e44ad; margin-bottom: 2px; }
+        .coupon-text p { font-size: 12px; color: #7f8c8d; margin: 0; }
+
+        /* --- GLOBAL & CONFETTI --- */
+        .decoration { position: absolute; font-size: 60px; opacity: 0.15; z-index: 1; pointer-events: none; }
+        .balloon-left { top: 20%; left: 10%; transform: rotate(-15deg); color: #ff6b6b; }
+        .star-right { top: 15%; right: 10%; color: #9b59b6; }
+        .star-bottom { bottom: 10%; left: 15%; color: #ff9ff3; font-size: 40px; }
+        .confetti { position: absolute; width: 10px; height: 10px; background-color: #f00; z-index: 999; pointer-events: none; }
+
+    </style>
+</head>
+<body>
+
+    <audio id="bgMusic" loop>
+        <source src="song.mp3" type="audio/mpeg">
+    </audio>
+
+    <div class="decoration balloon-left">🎈</div>
+    <div class="decoration star-right">★</div>
+    <div class="decoration star-bottom">★</div>
+
+    <div class="page page-active" id="page1">
+        <div class="loading-container">
+            <div class="cake-wrapper"><div class="cake-icon">🎂</div></div>
+            <h2 class="loading-text">Loading your birthday surprise...</h2>
+            <div class="progress-bar"><div class="progress-fill"></div></div>
+        </div>
+    </div>
+
+    <div class="page page-enter hidden" id="page2">
+        <div class="card">
+            <div class="intro-img-container">
+                <img src="intro.gif" alt="Cute Birthday Gif">
+            </div>
+            <h2>A Cutiepie was born today, 21 years ago!</h2>
+            <p class="subtitle">Yes, it's YOU! A little surprise awaits...</p>
+            <button class="btn-primary" onclick="startSurprise()">🎁 Start the surprise</button>
+        </div>
+    </div>
+
+    <div class="page page-enter hidden" id="page3">
+        <div class="toran">
+            <div class="flag"></div><div class="flag"></div><div class="flag"></div><div class="flag"></div>
+            <div class="flag"></div><div class="flag"></div><div class="flag"></div><div class="flag"></div>
+        </div>
+        <div class="card">
+            <h2 id="cakeTitle" style="margin-bottom: 75px;">Make a Wish...</h2>
+            <div class="cake-container">
+                <div class="plate"></div><div class="layer layer-bottom"></div><div class="layer layer-middle"></div><div class="layer layer-top"></div><div class="icing"></div>
+                <div class="drip drip1"></div><div class="drip drip2"></div><div class="drip drip3"></div>
+                <div class="candle"><div class="flame" id="flame"></div></div>
+            </div>
+            <button class="btn-primary" id="cakeBtn" onclick="lightCandle()">🕯️ Light the Candle</button>
+        </div>
+    </div>
+
+    <div class="page page-enter hidden" id="page4">
+        <div class="card">
+            <h2 style="margin-bottom: 10px;">Pop all 4 balloons!</h2>
+            <p class="subtitle"></p>
+            <div class="balloon-area">
+                <div class="balloon-wrapper b1"><div class="balloon" onclick="popBalloon(this, 'msg1')"></div><div class="string"></div><span class="hidden-text" id="msg1">You</span></div>
+                <div class="balloon-wrapper b2"><div class="balloon" onclick="popBalloon(this, 'msg2')"></div><div class="string"></div><span class="hidden-text" id="msg2">are</span></div>
+                <div class="balloon-wrapper b3"><div class="balloon" onclick="popBalloon(this, 'msg3')"></div><div class="string"></div><span class="hidden-text" id="msg3">very</span></div>
+                <div class="balloon-wrapper b4"><div class="balloon" onclick="popBalloon(this, 'msg4')"></div><div class="string"></div><span class="hidden-text" id="msg4">Cutiee</span></div>
+            </div>
+            <button class="btn-primary hidden" id="balloonNextBtn" style="margin-top: 30px;" onclick="nextPage(4, 5)">Next ➡️</button>
+        </div>
+    </div>
+
+    <div class="page page-enter hidden" id="page5">
+        <div class="card">
+            <h2>Some Sweet Moments</h2>
+            <p class="subtitle">(Swipe for more)</p>
+            <div class="gallery-viewport" id="galleryViewport">
+                <div class="gallery-track" id="galleryTrack">
+                    
+                    <div class="gallery-slide">
+                        <span class="photo-heart ph-left">♥</span>
+                        <span class="photo-heart ph-right">♥</span>
+                        <img src="1.jpg" alt="Sweet Moment 1">
+                        <p class="caption">Pahelo Photo aapda 2 no jode</p>
+                    </div>
+
+                    <div class="gallery-slide">
+                        <span class="photo-heart ph-left">♥</span>
+                        <span class="photo-heart ph-right">♥</span>
+                        <img src="2.jpg" alt="Sweet Moment 2">
+                        <p class="caption">MCD te mane bolavyo hato e </p>
+                    </div>
+
+                    <div class="gallery-slide">
+                        <span class="photo-heart ph-left">♥</span>
+                        <span class="photo-heart ph-right">♥</span>
+                        <img src="3.jpg" alt="Sweet Moment 3">
+                        <p class="caption">Office MCD</p>
+                    </div>
+
+                    <div class="gallery-slide">
+                        <span class="photo-heart ph-left">♥</span>
+                        <span class="photo-heart ph-right">♥</span>
+                        <img src="4.jpg" alt="Sweet Moment 4">
+                        <p class="caption">Office jyare aapde 2 j hata</p>
+                    </div>
+
+                    <div class="gallery-slide">
+                        <span class="photo-heart ph-left">♥</span>
+                        <span class="photo-heart ph-right">♥</span>
+                        <img src="5.jpg" alt="Sweet Moment 4">
+                        <p class="caption">Convocation ma last ma photo padva te ghare bolavyo hato e</p>
+                    </div>
+
+
+                    <div class="gallery-slide">
+                        <span class="photo-heart ph-left">♥</span>
+                        <span class="photo-heart ph-right">♥</span>
+                        <img src="6.jpg" alt="Sweet Moment 4">
+                        <p class="caption">Navratri 1st Day</p>
+                    </div>
+
+
+                    <div class="gallery-slide">
+                        <span class="photo-heart ph-left">♥</span>
+                        <span class="photo-heart ph-right">♥</span>
+                        <img src="7.jpg" alt="Sweet Moment 4">
+                        <p class="caption">Navratri Matching by coincidence</p>
+                    </div>
+
+                    <div class="gallery-slide">
+                        <span class="photo-heart ph-left">♥</span>
+                        <span class="photo-heart ph-right">♥</span>
+                        <img src="8.jpg" alt="Sweet Moment 4">
+                        <p class="caption">Navratri Last Day</p>
+                    </div>
+
+                    </div>
+            </div>
+            <button class="btn-primary" onclick="nextPage(5, 6)">✉️ Open My Message</button>
+        </div>
+    </div>
+
+    <div class="page page-enter hidden" id="page6">
+        <div class="card">
+            <h2>A Special Message</h2>
+            <p class="subtitle">Tap to open</p>
+            <div class="intro-img-container" style="background: transparent;">
+                <img src="cover.webp" class="message-img" alt="Birthday Message">
+            </div>
+            <button class="btn-primary" onclick="nextPage(6, 65)">Next ➡️</button>
+        </div>
+    </div>
+
+    <div class="page page-enter hidden" id="page65">
+        <div class="card">
+            <h2>For My Dobbuuu ❤️</h2>
+            <p class="subtitle">(Scroll to read)</p>
+            <div class="paper">
+                <p><strong>Dear Kishhuuuu,</strong></p><br>
+                <p>Happy Birthday! 🎉</p>
+                <p>I can't believe another year has passed. You are such an amazing person and I am so lucky to have you in my life.</p><br>
+                <p>I remember all the crazy times we've had, the late-night talks, and the endless laughter. You truly make the world a brighter place.</p><br>
+                <p>I hope this year brings you all the happiness, success, and love you deserve. Never change, because you are perfect just the way you are!</p><br>
+                <p>Haju bav badhu kevu chhe pan pachhi kahish shanti thi badhu atyare thodu website banavanu late thai gayu chhe and ratna 4 vagya chhe banavta banvata etle baki nu aaram thi kahish pachhi shanti thi</p><br>
+                <p>Sorry..🥺🥺</p><br>
+                <p>Lots of love,</p>
+                <p><strong>Your Best Friend</strong><br><strong>Princyy</strong></p>
+            </div>
+            <button class="btn-primary" onclick="nextPage(65, 68)">Gifts For You ➡️</button>
+        </div>
+    </div>
+
+    <div class="page page-enter hidden" id="page68">
+        <div class="card">
+            <h2>Your Gifts 🎁</h2>
+            <p class="subtitle">Redeem these anytime!</p>
+            
+            <div class="coupon-container">
+                <div class="coupon">
+                    <div class="coupon-icon">🍫🧇</div>
+                    <div class="coupon-text"><h3>Waffles, Icecream, Chocolates Treat </h3><p>Redeemable whenever you're sad or just craving.</p></div>
+                </div>
+                <div class="coupon">
+                    <div class="coupon-icon">🍕🍴</div>
+                    <div class="coupon-text"><h3>Dinner Treat</h3><p>My treat! You pick the place, I pick up the bill.</p></div>
+                </div>
+                <div class="coupon">
+                    <div class="coupon-icon">🎬🎥</div>
+                    <div class="coupon-text"><h3>Movie Plan</h3><p>You have full control. You pick whichever movie — whenever and wherever.</p></div>
+                </div>
+                <div class="coupon">
+                    <div class="coupon-icon">📱📞</div>
+                    <div class="coupon-text"><h3>3 AM Call Pass </h3><p>Wake me up anytime—whether you're sad, happy, or just can't sleep.</p></div>
+                </div>
+            </div>
+
+            <button class="btn-primary" onclick="nextPage(68, 7)">One Last Thing ➡️</button>
+        </div>
+    </div>
+
+    <div class="page page-enter hidden" id="page7">
+        <div class="card">
+            <h2>One Last Thing...</h2>
+            <div class="gift-container" onclick="openGift()">
+                <img src="gift.gif" alt="Gift Box">
+            </div>
+            <p class="subtitle" style="margin-top: 10px;">Tap the gift</p>
+        </div>
+    </div>
+
+    <div class="page page-enter hidden" id="page8">
+        <div class="card">
+            <div class="final-gif-container">
+                <img src="surprise.gif" alt="Cute Cat">
+            </div>
+            <h2>Lots of love for you ❤️</h2>
+            <p class="subtitle" style="margin-top: 15px;">Once again, Very very Happy Birthday! Hope you loved my surprise.</p>
+            <button class="btn-primary" onclick="replaySurprise()">🔄 Replay</button>
+        </div>
+    </div>
+
+    <script>
+        // --- Navigation ---
+        function nextPage(currentId, nextId) {
+            // IDs can be numbers like 65 or 68, just convert to string
+            const cId = String(currentId);
+            const nId = String(nextId);
+            
+            const currentPage = document.getElementById('page' + cId);
+            const nextPage = document.getElementById('page' + nId);
+
+            currentPage.classList.remove('page-active');
+            currentPage.classList.add('page-exit');
+            setTimeout(() => {
+                currentPage.classList.add('hidden');
+                currentPage.classList.remove('page-exit');
+                nextPage.classList.remove('hidden');
+                setTimeout(() => {
+                    nextPage.classList.add('page-active');
+                    nextPage.classList.remove('page-enter');
+                    if(nextId === 5) initGallery(); 
+                }, 50);
+            }, 800);
+        }
+
+        document.querySelector('.progress-fill').addEventListener('animationend', () => nextPage(1, 2));
+
+        // --- Music Start ---
+        function startSurprise() {
+            // Attempt to play music
+            const audio = document.getElementById('bgMusic');
+            audio.volume = 0.5;
+            audio.play().catch(error => {
+                console.log("Autoplay prevented. Music will start on next interaction.");
+            });
+            nextPage(2, 3);
+        }
+
+        // --- Confetti Shower ---
+        function lightCandle() {
+            document.getElementById('flame').classList.add('lit');
+            document.getElementById('cakeTitle').innerText = "Happy Birthday, Cutiepie!";
+            createShowerConfetti(); // NEW SHOWER EFFECT
+            const btn = document.getElementById('cakeBtn');
+            btn.innerHTML = "🎈 Pop the Balloons";
+            btn.onclick = () => nextPage(3, 4);
+        }
+
+        // --- Balloon Logic ---
+        let poppedCount = 0;
+        function popBalloon(element, msgId) {
+            if(element.classList.contains('popped')) return;
+            element.classList.add('popped');
+            document.getElementById(msgId).classList.add('revealed');
+            const rect = element.getBoundingClientRect();
+            createBurstConfetti(rect.left + rect.width/2, rect.top + rect.height/2);
+            poppedCount++;
+            if (poppedCount === 4) {
+                setTimeout(() => {
+                    const nextBtn = document.getElementById('balloonNextBtn');
+                    nextBtn.classList.remove('hidden');
+                    nextBtn.style.animation = "bounce 1s infinite alternate";
+                }, 500);
+            }
+        }
+
+        // --- Gallery Logic ---
+        let currentSlide = 0;
+        const track = document.getElementById('galleryTrack');
+        const slides = document.querySelectorAll('.gallery-slide');
+        const totalSlides = slides.length;
+        let autoSlideInterval;
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        function initGallery() {
+            startAutoSlide();
+            const viewport = document.getElementById('galleryViewport');
+            viewport.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; stopAutoSlide(); }, {passive: true});
+            viewport.addEventListener('touchend', e => { touchEndX = e.changedTouches[0].screenX; handleSwipe(); startAutoSlide(); }, {passive: true});
+            viewport.addEventListener('mousedown', e => { touchStartX = e.screenX; stopAutoSlide(); e.preventDefault(); });
+            viewport.addEventListener('mouseup', e => { touchEndX = e.screenX; handleSwipe(); startAutoSlide(); });
+        }
+        function startAutoSlide() { stopAutoSlide(); autoSlideInterval = setInterval(() => moveSlide(1), 5000); }
+        function stopAutoSlide() { clearInterval(autoSlideInterval); }
+        function handleSwipe() {
+            if (touchEndX < touchStartX - 50) moveSlide(1);
+            if (touchEndX > touchStartX + 50) moveSlide(-1);
+        }
+        function moveSlide(direction) {
+            currentSlide = (currentSlide + direction + totalSlides) % totalSlides;
+            track.style.transform = `translateX(${-currentSlide * 100}%)`;
+        }
+
+        function openGift() { nextPage(7, 8); }
+        function replaySurprise() { location.reload(); }
+
+        // --- Confetti Functions ---
+        
+        // Shower from TOP
+        function createShowerConfetti() {
+            const colors = ['#ff6b6b', '#feca57', '#48dbfb', '#ff9ff3', '#1dd1a1'];
+            for (let i = 0; i < 150; i++) {
+                const confetti = document.createElement('div');
+                confetti.classList.add('confetti');
+                document.body.appendChild(confetti);
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.top = '-10px'; 
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                const duration = Math.random() * 3 + 2;
+                confetti.animate([
+                    { transform: 'translateY(0) rotate(0deg)', opacity: 1 },
+                    { transform: `translateY(110vh) rotate(${Math.random() * 720}deg)`, opacity: 0 }
+                ], { duration: duration * 1000, easing: 'linear', fill: 'forwards' });
+                setTimeout(() => confetti.remove(), duration * 1000);
+            }
+        }
+
+        function createBurstConfetti(x, y) {
+            const colors = ['#ff6b6b', '#feca57', '#48dbfb', '#ff9ff3', '#1dd1a1'];
+            for (let i = 0; i < 30; i++) {
+                const conf = document.createElement('div');
+                conf.classList.add('confetti');
+                document.body.appendChild(conf);
+                conf.style.left = x + 'px';
+                conf.style.top = y + 'px';
+                conf.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                const angle = Math.random() * Math.PI * 2;
+                const velocity = Math.random() * 100 + 50; 
+                conf.animate([{ transform: `translate(0, 0) scale(1)`, opacity: 1 }, { transform: `translate(${Math.cos(angle) * velocity}px, ${Math.sin(angle) * velocity}px) scale(0)`, opacity: 0 }], { duration: 800, easing: 'ease-out', fill: 'forwards' });
+                setTimeout(() => conf.remove(), 800);
+            }
+        }
+    </script>
+</body>
+</html>
